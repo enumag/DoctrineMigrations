@@ -47,7 +47,7 @@ final class MigrationsExtension extends CompilerExtension
 		$config = $this->getValidatedConfig();
 
 		$containerBuilder->addDefinition($this->prefix('codeStyle'))
-			->setClass(CodeStyle::class)
+			->setClass('Zenify\DoctrineMigrations\CodeStyle\CodeStyle')
 			->setArguments([$config['codingStandard']]);
 
 		$this->addConfigurationDefinition($config);
@@ -71,7 +71,7 @@ final class MigrationsExtension extends CompilerExtension
 	{
 		$containerBuilder = $this->getContainerBuilder();
 		$containerBuilder->addDefinition($this->prefix('configuration'))
-			->setClass(Configuration::class)
+			->setClass('Zenify\DoctrineMigrations\Configuration\Configuration')
 			->addSetup('setMigrationsTableName', [$config['table']])
 			->addSetup('setMigrationsDirectory', [$config['directory']])
 			->addSetup('setMigrationsNamespace', [$config['namespace']]);
@@ -81,9 +81,9 @@ final class MigrationsExtension extends CompilerExtension
 	private function setConfigurationToCommands()
 	{
 		$containerBuilder = $this->getContainerBuilder();
-		$configurationDefinition = $containerBuilder->getDefinition($containerBuilder->getByType(Configuration::class));
+		$configurationDefinition = $containerBuilder->getDefinition($containerBuilder->getByType('Zenify\DoctrineMigrations\Configuration\Configuration'));
 
-		foreach ($containerBuilder->findByType(AbstractCommand::class) as $commandDefinition) {
+		foreach ($containerBuilder->findByType('Doctrine\DBAL\Migrations\Tools\Console\Command\AbstractCommand') as $commandDefinition) {
 			$commandDefinition->addSetup('setMigrationConfiguration', ['@' . $configurationDefinition->getClass()]);
 		}
 	}
@@ -92,8 +92,8 @@ final class MigrationsExtension extends CompilerExtension
 	private function loadCommandsToApplication()
 	{
 		$containerBuilder = $this->getContainerBuilder();
-		$applicationDefinition = $containerBuilder->getDefinition($containerBuilder->getByType(Application::class));
-		foreach ($containerBuilder->findByType(AbstractCommand::class) as $name => $commandDefinition) {
+		$applicationDefinition = $containerBuilder->getDefinition($containerBuilder->getByType('Symfony\Component\Console\Application'));
+		foreach ($containerBuilder->findByType('Doctrine\DBAL\Migrations\Tools\Console\Command\AbstractCommand') as $name => $commandDefinition) {
 			$applicationDefinition->addSetup('add', ['@' . $name]);
 		}
 	}
@@ -130,9 +130,9 @@ final class MigrationsExtension extends CompilerExtension
 
 	private function ensureSymnediEventDispatcherExtensionIsRegistered()
 	{
-		if ( ! $this->compiler->getExtensions(EventDispatcherExtension::class)) {
+		if ( ! $this->compiler->getExtensions('Symnedi\EventDispatcher\DI\EventDispatcherExtension')) {
 			throw new MissingExtensionException(
-				sprintf('Please register required extension "%s" to your config.', EventDispatcherExtension::class)
+				sprintf('Please register required extension "%s" to your config.', 'Symnedi\EventDispatcher\DI\EventDispatcherExtension')
 			);
 		}
 	}
